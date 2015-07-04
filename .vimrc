@@ -83,3 +83,5 @@ highlight clear SignColumn
 
 "Treat dashes as part of word
 set iskeyword+=-
+
+set backupcopy=yes
