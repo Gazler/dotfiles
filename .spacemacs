@@ -10,7 +10,7 @@
    dotspacemacs-configuration-layer-path '()
    ;; List of configuration layers to load. If it is the symbol `all' instead
    ;; of a list then all discovered layers will be installed.
-   dotspacemacs-configuration-layers  
+   dotspacemacs-configuration-layers
    '(
      emacs-lisp
      markdown
@@ -18,8 +18,9 @@
      auto-completion
      company-mode
      javascript
-     erlang
      elixir
+     erlang
+     typescript
      git
      version-control
      dash
@@ -27,6 +28,7 @@
      org
      colors
      ruby
+     spotify
      editorconfig
      themes-megapack
      perspectives
@@ -162,23 +164,45 @@ before layers configuration."
   "Configuration function.
  This function is called at the very end of Spacemacs initialization after
 layers configuration."
-  (spacemacs/toggle-line-numbers)
+ (spacemacs/toggle-smartparens-globally)
+ (global-linum-mode)
+
+  (add-to-list 'auto-mode-alist '("\\.jsx" . web-mode))
 
   (setq c-basic-offset 2)
   (setq indent-tabs-mode nil)
 
+
   (setq tab-width 2)
   (setq js-indent-level 2)
+  (setq css-indent-offset 2)
 
   (setq web-mode-markup-indent-offset 2)
   (setq web-mode-css-indent-offset 2)
   (setq web-mode-code-indent-offset 2)
 
+  (setq css-mode-css-indent-offset 2)
+
   (setq-default evil-shift-width 2)
 
   (setq diff-hl-side 'left)
   (add-hook 'alchemist-mode-hook 'company-mode)
-)
+
+  (setq flycheck-checkers '(javascript-eslint))
+
+  (require 'flycheck)
+  ;; turn on flychecking globally
+  (add-hook 'after-init-hook #'global-flycheck-mode)
+  ;; disable jshint since we prefer eslint checking
+  (setq-default flycheck-disabled-checkers
+                (append flycheck-disabled-checkers
+                        '(javascript-jshint)))
+  ;; use eslint with web-mode for jsx files
+  (flycheck-add-mode 'javascript-eslint 'web-mode)
+  ;; disable json-jsonlist checking for json files
+  (setq-default flycheck-disabled-checkers
+                (append flycheck-disabled-checkers
+                        '(json-jsonlist))))
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
@@ -203,3 +227,5 @@ layers configuration."
  ;; If there is more than one, they won't work right.
  '(company-tooltip-common ((t (:inherit company-tooltip :weight bold :underline nil))))
  '(company-tooltip-common-selection ((t (:inherit company-tooltip-selection :weight bold :underline nil)))))
+
+(fset 'evil-visual-update-x-selection 'ignore)
