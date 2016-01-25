@@ -28,6 +28,7 @@
      html
      org
      colors
+     react
      ruby
      spotify
      editorconfig
@@ -168,8 +169,6 @@ before layers configuration."
  This function is called at the very end of Spacemacs initialization after
 layers configuration."
   (global-linum-mode)
-
-  (add-to-list 'auto-mode-alist '("\\.jsx" . web-mode))
 
   (setq c-basic-offset 2)
   (setq indent-tabs-mode nil)
