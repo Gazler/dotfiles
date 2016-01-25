@@ -23,7 +23,8 @@
      erlang
      typescript
      git
-     version-control
+     (version-control :variables
+                      version-control-diff-tool 'diff-hl)
      dash
      html
      org
