@@ -18,6 +18,7 @@
      auto-completion
      company-mode
      javascript
+     elm
      elixir
      erlang
      typescript
@@ -188,6 +189,10 @@ layers configuration."
 
   (setq diff-hl-side 'left)
   (add-hook 'alchemist-mode-hook 'company-mode)
+
+  (add-hook 'elm-mode-hook
+            (lambda ()
+              (setq company-backends '(company-elm))))
 
   (setq flycheck-checkers '(javascript-eslint))
 
