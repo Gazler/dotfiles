@@ -172,7 +172,7 @@ layers configuration."
 
   (setq c-basic-offset 2)
   (setq indent-tabs-mode nil)
-
+  (setq create-lockfiles nil)
 
   (setq tab-width 2)
   (setq js-indent-level 2)
