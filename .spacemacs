@@ -39,7 +39,9 @@
    ;; configuration in `dotspacemacs/config'.
    dotspacemacs-additional-packages '()
    ;; A list of packages and/or extensions that will not be install and loaded.
-   dotspacemacs-excluded-packages '()
+   dotspacemacs-excluded-packages '(
+     smartparens
+   )
    ;; If non-nil spacemacs will delete any orphan packages, i.e. packages that
    ;; are declared in a layer which is not a member of
    ;; the list `dotspacemacs-configuration-layers'
@@ -164,8 +166,7 @@ before layers configuration."
   "Configuration function.
  This function is called at the very end of Spacemacs initialization after
 layers configuration."
- (spacemacs/toggle-smartparens-globally)
- (global-linum-mode)
+  (global-linum-mode)
 
   (add-to-list 'auto-mode-alist '("\\.jsx" . web-mode))
 
