@@ -15,6 +15,7 @@
      emacs-lisp
      markdown
      syntax-checking
+     spell-checking
      auto-completion
      company-mode
      javascript
@@ -169,25 +170,6 @@ before layers configuration."
   "Configuration function.
  This function is called at the very end of Spacemacs initialization after
 layers configuration."
-  (global-linum-mode)
-
-  (setq c-basic-offset 2)
-  (setq indent-tabs-mode nil)
-  (setq create-lockfiles nil)
-
-  (setq tab-width 2)
-  (setq js-indent-level 2)
-  (setq css-indent-offset 2)
-
-  (setq web-mode-markup-indent-offset 2)
-  (setq web-mode-css-indent-offset 2)
-  (setq web-mode-code-indent-offset 2)
-
-  (setq css-mode-css-indent-offset 2)
-
-  (setq-default evil-shift-width 2)
-
-  (setq diff-hl-side 'left)
   (add-hook 'alchemist-mode-hook 'company-mode)
 
   (add-hook 'elm-mode-hook
@@ -210,6 +192,26 @@ layers configuration."
                 (append flycheck-disabled-checkers
                         '(json-jsonlist))))
 
+(defun dotspacemacs/user-config ()
+  (setq c-basic-offset 2)
+  (setq indent-tabs-mode nil)
+  (setq create-lockfiles nil)
+
+  (setq tab-width 2)
+  (setq js-indent-level 2)
+  (setq css-indent-offset 2)
+
+  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-css-indent-offset 2)
+  (setq web-mode-code-indent-offset 2)
+
+  (setq css-mode-css-indent-offset 2)
+
+  (setq-default evil-shift-width 2)
+
+  (global-linum-mode)
+  (setq diff-hl-side 'left))
+
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
 (custom-set-variables
@@ -224,8 +226,10 @@ layers configuration."
  '(ahs-inhibit-face-list nil)
  '(ansi-color-faces-vector
    [default default default italic underline success warning error])
+ '(css-indent-offset 2)
  '(js-indent-level 2)
- '(ring-bell-function (quote ignore) t))
+ '(ring-bell-function (quote ignore) t)
+ '(web-mode-code-indent-offset 2))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
