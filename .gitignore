@@ -1,1 +1,6 @@
 *.sw[a-z]
+inotify-elixir-mix
+.projectile
+.tool-versions
+.*.gazler
+yarn.lock
