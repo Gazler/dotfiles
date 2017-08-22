@@ -8,19 +8,23 @@
    ;; List of additional paths where to look for configuration layers.
    ;; Paths must have a trailing slash (i.e. `~/.mycontribs/')
    dotspacemacs-configuration-layer-path '()
+   dotspacemacs-folding-method 'origami
    ;; List of configuration layers to load. If it is the symbol `all' instead
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers
    '(
+     csv
+     sql
      emacs-lisp
      markdown
      syntax-checking
      spell-checking
+     yaml
      auto-completion
      company-mode
      javascript
-     elm
      elixir
+     elm
      erlang
      typescript
      git
@@ -72,7 +76,9 @@ before layers configuration."
    dotspacemacs-startup-banner 'official
    ;; List of items to show in the startup buffer. If nil it is disabled.
    ;; Possible values are: `recents' `bookmarks' `projects'."
-   dotspacemacs-startup-lists '(recents projects)
+   dotspacemacs-startup-lists '(projects recents)
+   dotspacemacs-startup-recent-list-size 30
+
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press <SPC> T n to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
@@ -211,6 +217,8 @@ layers configuration."
 
   (global-linum-mode)
   (setq diff-hl-side 'left))
+
+  (global-set-key (kbd "C-x C-f") 'find-file)
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
