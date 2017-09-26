@@ -18,11 +18,15 @@
 import XMonad
 import Data.Monoid
 import System.Exit
- 
+
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks
 -- import XMonad.Actions.Volume
 import XMonad.Util.Dzen
+import XMonad.Util.EZConfig(additionalKeys)
+import XMonad.Hooks.ICCCMFocus
+
+import System.IO
 
 
 import qualified XMonad.StackSet as W
@@ -104,7 +108,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     [ ((modm .|. shiftMask, xK_Return), spawn $ XMonad.terminal conf)
  
     -- launch dmenu
-    , ((modm,               xK_p     ), spawn "exe=`dmenu_path | dmenu` && eval \"exec $exe\"")
+    , ((modm,               xK_p     ), spawn "exe=`dmenu_path | dmenu_run` && eval \"exec $exe\"")
  
     -- launch gmrun
     , ((modm .|. shiftMask, xK_p     ), spawn "gmrun")
@@ -269,6 +273,8 @@ myLayout = tiled ||| Mirror tiled ||| Full
 myManageHook = composeAll
     [ className =? "MPlayer"        --> doFloat
     , className =? "Gimp"           --> doFloat
+    , className =? "Steam"           --> doFloat
+    , className =? "steam"           --> doFloat
     , resource  =? "desktop_window" --> doIgnore
     , resource  =? "kdesktop"       --> doIgnore ]
  
@@ -298,7 +304,9 @@ myEventHook = mempty
 -- It will add EWMH logHook actions to your custom log hook by
 -- combining it with ewmhDesktopsLogHook.
 --
-myLogHook = return ()
+myLogHook = do
+                        takeTopFocus
+                        dynamicLogWithPP xmobarPP  
  
 ------------------------------------------------------------------------
 -- Startup hook
