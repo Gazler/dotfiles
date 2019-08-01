@@ -20,7 +20,13 @@ fi
 hsetroot -solid '#000000'
 xsetroot -cursor_name left_ptr
 
+killall pasystray
+pasystray &
+
 killall compton
 compton -b &
+
+rivalcfg -c 000000
+rivalcfg -C 000000
 
 exec $HOME/.cabal/bin/xmonad

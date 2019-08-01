@@ -368,3 +368,10 @@ defaults = defaultConfig {
         logHook            = myLogHook,
         startupHook        = myStartupHook
     }
+
+  `additionalKeys`
+    [ ((mod4Mask .|. shiftMask, xK_z), spawn "xscreensaver-command -lock"),
+      ((0                     , 0x1008FF11), spawn "pactl set-sink-volume @DEFAULT_SINK@ -1.5%"),
+      ((0                     , 0x1008FF13), spawn "pactl set-sink-volume @DEFAULT_SINK@ +1.5%"),
+      ((0                     , 0x1008FF12), spawn "pactl set-sink-mute @DEFAULT_SINK@ toggle")
+    ]
