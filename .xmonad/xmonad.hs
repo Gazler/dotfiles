@@ -25,6 +25,7 @@ import XMonad.Hooks.ManageDocks
 import XMonad.Util.Dzen
 import XMonad.Util.EZConfig(additionalKeys)
 import XMonad.Hooks.ICCCMFocus
+import XMonad.Hooks.ManageHelpers
 
 import System.IO
 
@@ -99,7 +100,6 @@ myWorkspaces    = ["1","2","3","4","5","6","7","8","9"]
 myNormalBorderColor  = "#dddddd"
 myFocusedBorderColor = "#ff0000"
  
-------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
 --
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
@@ -146,6 +146,8 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- Swap the focused window and the master window
     , ((modm,               xK_Return), windows W.swapMaster)
 
+    , ((modm .|. shiftMask, xK_m), spawn "xrandr --output DP-2 --auto --output DP-4 --primary --left-of DP-2")
+
     -- Swap the focused window with the next window
     , ((modm .|. shiftMask, xK_j     ), windows W.swapDown  )
  
@@ -157,6 +159,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
  
     -- Expand the master area
     , ((modm,               xK_l     ), sendMessage Expand)
+    , ((modm .|. shiftMask, xK_l), spawn "mate-screensaver-command -l")
  
     -- Push window back into tiling
     , ((modm,               xK_t     ), withFocused $ windows . W.sink)
@@ -168,7 +171,8 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm              , xK_period), sendMessage (IncMasterN (-1)))
 
     --Screenshot
-    , ((0,                  xK_Print ), spawn "gnome-screenshot -i")
+   , ((modm , xK_Print ), spawn "scrot screen_%Y-%m-%d-%H-%M-%S.png -d 1")
+   , ((modm .|. shiftMask, xK_Print ), spawn "scrot window_%Y-%m-%d-%H-%M-%S.png -d 1-u")
  
     -- Toggle the status bar gap
     -- Use this binding with avoidStruts from Hooks.ManageDocks.
@@ -270,13 +274,23 @@ myLayout = tiled ||| Mirror tiled ||| Full
 -- 'className' and 'resource' are used below.
 --
 
+isItAGame = className =? "hexchat"
+
+noGamesBindings :: [(KeyMask, KeySym, X ())] -> [(KeyMask, KeySym, X ())]
+noGamesBindings = fmap notWithGames
+  where notWithGames :: (KeyMask, KeySym, X ()) -> (KeyMask, KeySym, X ())
+        notWithGames (mod, key, action) =
+          (mod, key, withFocused $ \w -> whenX (runQuery isItAGame w) action)
+
 myManageHook = composeAll
     [ className =? "MPlayer"        --> doFloat
     , className =? "Gimp"           --> doFloat
     , className =? "Steam"           --> doFloat
+    , className =? "PCSX2"           --> doFloat
     , className =? "steam"           --> doFloat
     , resource  =? "desktop_window" --> doIgnore
-    , resource  =? "kdesktop"       --> doIgnore ]
+    , resource  =? "kdesktop"       --> doIgnore
+    , isFullscreen                  --> doFullFloat ]
  
 ------------------------------------------------------------------------
 -- Event handling
@@ -375,3 +389,32 @@ defaults = defaultConfig {
       ((0                     , 0x1008FF13), spawn "pactl set-sink-volume @DEFAULT_SINK@ +1.5%"),
       ((0                     , 0x1008FF12), spawn "pactl set-sink-mute @DEFAULT_SINK@ toggle")
     ]
+
+-- import XMonad.Actions.PerWorkspaceKeys
+-- 
+-- workspaceModkeys = [ (mod1Mask, map show ([1..4] ++ [6..9])) -- use Alt as modkey on all workspaces
+--                    , (mod4Mask, ["5"])                       -- save 5th (use Win there)
+--                    ]
+-- 
+-- modifiedKeysList conf =
+--   [ ((0,         xK_Return), spawn $ XMonad.terminal conf)  -- launch a terminal
+--   , ((shiftMask, xK_c     ), kill)  -- close focused window
+--   ]
+-- 
+-- unmodifiedKeys conf =
+--   [ ((0, xF86XK_AudioPlay ), spawn "mpc toggle")
+--   , ((0, xF86XK_AudioStop ), spawn "mpc stop")
+--   ]
+-- 
+-- keysList conf = concat (map modifyKey (modifiedKeysList conf)) ++ (unmodifiedKeys conf)
+-- 
+-- modifyKey :: ((KeyMask, KeySym), X()) -> [((KeyMask, KeySym), X())]
+-- modifyKey k = map (f k) workspaceModkeys
+--   where
+--     f ((mask, key), action) (mod, workspaces) = ((mask .|. mod, key), bindOn (map (\w -> (w, action)) workspaces))
+-- 
+-- myKeys conf = M.fromList $ keysList conf
+-- 
+-- main = xmonad $ defaultConfig {
+--   keys = myKeys
+-- }
