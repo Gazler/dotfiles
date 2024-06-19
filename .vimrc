@@ -1,6 +1,7 @@
 call pathogen#infect()
 set nocompatible
 set scrolloff=3
+set mouse=a
 
 syntax on
 
@@ -40,6 +41,7 @@ set foldlevel=1
 
 let mapleader = ","
 
+let g:solarized_termtrans = 1
 set background=dark
 colorscheme solarized
 
