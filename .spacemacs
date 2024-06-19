@@ -30,7 +30,7 @@
      yaml
      auto-completion
      javascript
-     elixir
+     (elixir :variables elixir-backend 'alchemist)
      elm
      erlang
      typescript
