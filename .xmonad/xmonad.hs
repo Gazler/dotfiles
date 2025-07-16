@@ -21,10 +21,14 @@ import System.Exit
 
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks
--- import XMonad.Actions.Volume
+
+import XMonad.Layout.Spacing
+import XMonad.Layout.NoBorders
 import XMonad.Util.Dzen
 import XMonad.Util.EZConfig(additionalKeys)
-import XMonad.Hooks.ICCCMFocus
+import Graphics.X11.ExtraTypes.XF86
+
+-- import XMonad.Hooks.ICCCMFocus
 import XMonad.Hooks.ManageHelpers
 
 import System.IO
@@ -33,6 +37,15 @@ import System.IO
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
 import Data.Monoid
+
+-- dbus
+import qualified DBus as D
+import qualified DBus.Client as D
+import qualified Codec.Binary.UTF8.String as UTF8
+-- ewmh
+import XMonad.Hooks.EwmhDesktops
+
+import XMonad.Util.Hacks (fixSteamFlicker)
 
 alert = dzenConfig centered . show . round
 centered =
@@ -44,7 +57,8 @@ centered =
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
 --
-myTerminal      = "gnome-terminal"
+-- myTerminal      = "alacritty"
+myTerminal      = "wezterm"
  
 -- Whether focus follows the mouse pointer.
 myFocusFollowsMouse :: Bool
@@ -108,7 +122,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     [ ((modm .|. shiftMask, xK_Return), spawn $ XMonad.terminal conf)
  
     -- launch dmenu
-    , ((modm,               xK_p     ), spawn "exe=`dmenu_path | dmenu_run` && eval \"exec $exe\"")
+    , ((modm,               xK_p     ), spawn "exe=`dmenu_path | dmenu_run -fn 'FiraCode-16'` && eval \"exec $exe\"")
  
     -- launch gmrun
     , ((modm .|. shiftMask, xK_p     ), spawn "gmrun")
@@ -121,7 +135,14 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
     -- Change keyboard layout to DVORAK
     , ((modm .|. shiftMask, xK_Escape), spawn "setxkbmap gb -variant dvorak")
- 
+
+    , ((0, xF86XK_AudioPlay          ), spawn "bash -c 'if [ $(playerctl status) = Playing ]; then playerctl pause; else playerctl play; fi'")
+    , ((0, xF86XK_AudioPrev          ), spawn "playerctl previous")
+    , ((0, xF86XK_AudioNext          ), spawn "playerctl next")
+    , ((0, xF86XK_AudioRaiseVolume   ), spawn "amixer sset Master 2%+")
+    , ((0, xF86XK_AudioLowerVolume   ), spawn "amixer sset Master 2%-")
+    , ((0, xF86XK_AudioMute          ), spawn "amixer sset Master toggle")
+
      -- Rotate through the available layout algorithms
     , ((modm,               xK_space ), sendMessage NextLayout)
  
@@ -178,7 +199,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- Use this binding with avoidStruts from Hooks.ManageDocks.
     -- See also the statusBar function from Hooks.DynamicLog.
     --
-    -- , ((modm              , xK_b     ), sendMessage ToggleStruts)
+    , ((modm              , xK_b     ), sendMessage ToggleStruts)
  
     -- Quit xmonad
     , ((modm .|. shiftMask, xK_q     ), io (exitWith ExitSuccess))
@@ -284,10 +305,11 @@ noGamesBindings = fmap notWithGames
 
 myManageHook = composeAll
     [ className =? "MPlayer"        --> doFloat
+    , className =? "polybar"        --> hasBorder False
     , className =? "Gimp"           --> doFloat
-    , className =? "Steam"           --> doFloat
+    -- , className =? "Steam"           --> doFloat
     , className =? "PCSX2"           --> doFloat
-    , className =? "steam"           --> doFloat
+    -- , className =? "steam"           --> doFloat
     , resource  =? "desktop_window" --> doIgnore
     , resource  =? "kdesktop"       --> doIgnore
     , isFullscreen                  --> doFullFloat ]
@@ -304,7 +326,7 @@ myManageHook = composeAll
 -- It will add EWMH event handling to your custom event hooks by
 -- combining them with ewmhDesktopsEventHook.
 --
-myEventHook = mempty
+-- myEventHook = mempty
  
 ------------------------------------------------------------------------
 -- Status bars and logging
@@ -318,9 +340,30 @@ myEventHook = mempty
 -- It will add EWMH logHook actions to your custom log hook by
 -- combining it with ewmhDesktopsLogHook.
 --
-myLogHook = do
-                        takeTopFocus
-                        dynamicLogWithPP xmobarPP  
+--
+myLogHook :: D.Client -> PP
+myLogHook dbus = def { 
+  ppOutput = dbusOutput dbus 
+  , ppCurrent = wrap ("%{B" ++ "#295f90" ++ "}  ") "  %{B-}"
+  , ppVisible = wrap ("%{B" ++ "#3e7c23" ++ "}  ") "  %{B-}"
+  , ppUrgent = wrap ("%{F" ++ "#ff0000" ++ "}  ") "  %{F-}"
+  , ppHidden = wrap "  " "  "
+  , ppWsSep = ""
+  , ppSep = " : "
+  , ppTitle = (\ title -> "")
+  , ppLayout = (\ x -> "")
+}
+dbusOutput :: D.Client -> String -> IO ()
+dbusOutput dbus str = do
+    let signal = (D.signal objectPath interfaceName memberName) {
+            D.signalBody = [D.toVariant $ UTF8.decodeString str]
+        }
+    D.emit dbus signal
+  where
+    objectPath = D.objectPath_ "/org/xmonad/Log"
+    interfaceName = D.interfaceName_ "org.xmonad.Log"
+    memberName = D.memberName_ "Update"
+
  
 ------------------------------------------------------------------------
 -- Startup hook
@@ -336,85 +379,42 @@ myLogHook = do
 -- It will add initialization of EWMH support to your custom startup
 -- hook by combining it with ewmhDesktopsStartup.
 --
-myStartupHook = spawn "bash ~/.xsession"
+myStartupHook = spawn "xsetroot -cursor_name left_ptr"
+--
  
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.
  
 -- Run xmonad with the settings you specify. No need to modify this.
 --
-main = xmonad =<< statusBar myBar myPP toggleStrutsKey defaults
+main = do
+   dbus <- D.connectSession
+   -- Request access to the DBus name
+   D.requestName dbus (D.busName_ "org.xmonad.Log")
+     [D.nameAllowReplacement, D.nameReplaceExisting, D.nameDoNotQueue]
+   xmonad . ewmh . docks $ def
+      {
+        -- simple stuff
+          terminal           = myTerminal,
+          focusFollowsMouse  = myFocusFollowsMouse,
+          borderWidth        = myBorderWidth,
+          modMask            = myModMask,
+          -- numlockMask deprecated in 0.9.1
+          -- numlockMask        = myNumlockMask,
+          workspaces         = myWorkspaces,
+          normalBorderColor  = myNormalBorderColor,
+          focusedBorderColor = myFocusedBorderColor,
 
--- Command to launch the bar.
-myBar = "xmobar"
+        -- key bindings
+          keys               = myKeys,
+          mouseBindings      = myMouseBindings,
 
--- Custom PP, configure it as you like. It determines what is being written to the bar.
-myPP = xmobarPP { ppCurrent = xmobarColor "#429942" "" . wrap "<" ">" }
+        -- hooks, layouts
+          layoutHook         = spacingWithEdge 4 $ smartBorders $ avoidStruts $ myLayout,
+          manageHook         = manageDocks <+> myManageHook,
+          startupHook        = myStartupHook,
+          handleEventHook    = fixSteamFlicker <+> handleEventHook def
+      }
 
 -- Key binding to toggle the gap for the bar.
 toggleStrutsKey XConfig {XMonad.modMask = modMask} = (modMask, xK_b)
-
--- A structure containing your configuration settings, overriding
--- fields in the default config. Any you don't override, will
--- use the defaults defined in xmonad/XMonad/Config.hs
---
---
-defaults = defaultConfig {
-      -- simple stuff
-        terminal           = myTerminal,
-        focusFollowsMouse  = myFocusFollowsMouse,
-        borderWidth        = myBorderWidth,
-        modMask            = myModMask,
-        -- numlockMask deprecated in 0.9.1
-        -- numlockMask        = myNumlockMask,
-        workspaces         = myWorkspaces,
-        normalBorderColor  = myNormalBorderColor,
-        focusedBorderColor = myFocusedBorderColor,
- 
-      -- key bindings
-        keys               = myKeys,
-        mouseBindings      = myMouseBindings,
- 
-      -- hooks, layouts
-        layoutHook         = avoidStruts $ myLayout,
-        manageHook         = manageDocks <+> myManageHook,
-        handleEventHook    = myEventHook,
-        logHook            = myLogHook,
-        startupHook        = myStartupHook
-    }
-
-  `additionalKeys`
-    [ ((mod4Mask .|. shiftMask, xK_z), spawn "xscreensaver-command -lock"),
-      ((0                     , 0x1008FF11), spawn "pactl set-sink-volume @DEFAULT_SINK@ -1.5%"),
-      ((0                     , 0x1008FF13), spawn "pactl set-sink-volume @DEFAULT_SINK@ +1.5%"),
-      ((0                     , 0x1008FF12), spawn "pactl set-sink-mute @DEFAULT_SINK@ toggle")
-    ]
-
--- import XMonad.Actions.PerWorkspaceKeys
--- 
--- workspaceModkeys = [ (mod1Mask, map show ([1..4] ++ [6..9])) -- use Alt as modkey on all workspaces
---                    , (mod4Mask, ["5"])                       -- save 5th (use Win there)
---                    ]
--- 
--- modifiedKeysList conf =
---   [ ((0,         xK_Return), spawn $ XMonad.terminal conf)  -- launch a terminal
---   , ((shiftMask, xK_c     ), kill)  -- close focused window
---   ]
--- 
--- unmodifiedKeys conf =
---   [ ((0, xF86XK_AudioPlay ), spawn "mpc toggle")
---   , ((0, xF86XK_AudioStop ), spawn "mpc stop")
---   ]
--- 
--- keysList conf = concat (map modifyKey (modifiedKeysList conf)) ++ (unmodifiedKeys conf)
--- 
--- modifyKey :: ((KeyMask, KeySym), X()) -> [((KeyMask, KeySym), X())]
--- modifyKey k = map (f k) workspaceModkeys
---   where
---     f ((mask, key), action) (mod, workspaces) = ((mask .|. mod, key), bindOn (map (\w -> (w, action)) workspaces))
--- 
--- myKeys conf = M.fromList $ keysList conf
--- 
--- main = xmonad $ defaultConfig {
---   keys = myKeys
--- }
