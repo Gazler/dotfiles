@@ -1,7 +1,7 @@
 @import "../omarchy/current/theme/waybar.css";
 
 window {
-  background-color: @background;
+  background-color: rgba(26, 27, 38, 0.5);
   color: @foreground;
 }
 
@@ -34,7 +34,10 @@ window {
 }
 
 #workspaces button.visible {
-  color: #FF0000;
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 2px solid;
+  border-image-slice: 1;
+  border-image-source: linear-gradient(135deg,rgba(51, 204, 255, 1) 0%, rgba(0, 255, 153, 1) 100%);
   opacity: 1;
 }
 
