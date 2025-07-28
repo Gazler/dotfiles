@@ -13,12 +13,13 @@
   ],
   "modules-right": [
     "clock",
-    "group/tray-expander",
+    "custom/idle",
     "bluetooth",
     "network",
     "pulseaudio",
     "cpu",
-    "battery"
+    "battery",
+    "tray"
   ],
   "hyprland/workspaces": {
     "on-click": "activate",
@@ -95,6 +96,12 @@
       "critical": 10
     }
   },
+  "custom/idle": {
+    "format": "{text}",
+    "signal": 8,
+    "on-click": "~/.local/share/omarchy/bin/omarchy-toggle-idle",
+    "exec": "if pgrep -x hypridle >/dev/null; then echo '󰒲'; else echo '󰒳'; fi"
+  },
   "bluetooth": {
     "format": "",
     "format-disabled": "󰂲",
@@ -130,6 +137,6 @@
   },
   "tray": {
     "icon-size": 12,
-    "spacing": 12
+    "spacing": 12,
   }
 }
