@@ -1,6 +1,6 @@
 @import "../omarchy/current/theme/waybar.css";
 
-window {
+ window {
   background-color: @background;
   color: @foreground;
 }
@@ -22,25 +22,10 @@ window {
 }
 
 #workspaces button {
-  background-color: @background;
-  color: @foreground;
   all: initial;
   padding: 0 6px;
   margin: 0 1.5px;
-}
-
-#workspaces button.empty {
-  opacity: 0.4;
-  color: @foreground;
-}
-
-#workspaces button.visible {
-  background-color: rgba(255, 255, 255, 0.15);
-  color: @foreground;
-  border: 2px solid #268bd2;
-  /* border-image-slice: 1; */
-  /* border-image-source: linear-gradient(135deg,rgba(51, 204, 255, 1) 0%, rgba(0, 255, 153, 1) 100%); */
-  opacity: 1;
+  min-width: 9px;
 }
 
 #tray,
@@ -61,6 +46,17 @@ window {
 
 tooltip {
   padding: 2px;
+  background-color: @background;
+}
+
+#workspaces button.empty {
+  opacity: 0.4;
+}
+
+#workspaces button.visible {
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 2px solid #268bd2;
+  opacity: 1;
 }
 
 #tray {
@@ -68,4 +64,15 @@ tooltip {
   margin: 4px;
   padding-left: 12px;
   margin-left: 6px;
+}
+
+#custom-priv1 {
+  color: #b2a5ff;
+  margin-left: 8px;
+}
+
+#custom-priv2 {
+  color: #F7931A;
+  margin-left: 8px;
+  margin-right: 16px;
 }
